@@ -85,6 +85,15 @@
     }
     .hero p{margin:0;color:var(--muted);line-height:1.6;font-size:14px;}
     .hero-cta{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;}
+    .student-card{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.1);
+      background: rgba(11,16,32,.55);
+      display:grid;
+      gap:8px;
+    }
     .hero-art{
       position:relative;
       border-radius:18px;
@@ -252,6 +261,12 @@
         Kemas kini UI ini menambah tema latar yang lebih menarik, ilustrasi ringkas, serta fungsi
         <b>Download PDF</b> untuk simpan laporan CGPA dalam format profesional.
       </p>
+      <div class="student-card">
+        <label class="small" for="studentName">Nama Pelajar</label>
+        <input id="studentName" type="text" placeholder="Contoh: Nur Aisyah" />
+        <label class="small" for="studentMatric">No. Matrik</label>
+        <input id="studentMatric" type="text" placeholder="Contoh: A22CS0123" />
+      </div>
       <div class="hero-cta">
         <button id="downloadPdfBtn" class="primary" type="button">⬇️ Download PDF</button>
         <button id="addSemBtn" class="ok" type="button">📚 Tambah Semester</button>
@@ -376,6 +391,9 @@
   };
 
   const STORAGE_KEY = "cgpa_multi_sem_v1";
+  const DB_NAME = "cgpa_calculator_db";
+  const DB_STORE = "cgpa_state";
+  const DB_KEY = "state";
 
   const els = {
     statusPill: document.getElementById("statusPill"),
@@ -394,7 +412,9 @@
     outCGPA: document.getElementById("outCGPA"),
     outAllCredits: document.getElementById("outAllCredits"),
     toast: document.getElementById("toast"),
-    downloadPdfBtn: document.getElementById("downloadPdfBtn")
+    downloadPdfBtn: document.getElementById("downloadPdfBtn"),
+    studentName: document.getElementById("studentName"),
+    studentMatric: document.getElementById("studentMatric")
   };
 
   // ===== App State =====
@@ -402,7 +422,11 @@
     activeSemId: "",
     semesters: [
       // { id, name, rows: [{course, credit, grade}] }
-    ]
+    ],
+    student: {
+      name: "",
+      matric: ""
+    }
   };
 
   function uid(){
@@ -446,25 +470,69 @@
     return state.semesters.find(s=>s.id===state.activeSemId) || null;
   }
 
-  function save(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, ts: Date.now() }));
+  function openDb(){
+    return new Promise((resolve, reject)=> {
+      const req = indexedDB.open(DB_NAME, 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if(!db.objectStoreNames.contains(DB_STORE)){
+          db.createObjectStore(DB_STORE);
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
   }
 
-  function load(){
+  async function save(){
     try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(!raw) return false;
-      const parsed = JSON.parse(raw);
+      const db = await openDb();
+      const tx = db.transaction(DB_STORE, "readwrite");
+      tx.objectStore(DB_STORE).put({ ...state, ts: Date.now() }, DB_KEY);
+      return new Promise((resolve, reject)=> {
+        tx.oncomplete = () => { db.close(); resolve(true); };
+        tx.onerror = () => { db.close(); reject(tx.error); };
+      });
+    }catch(e){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, ts: Date.now() }));
+      return false;
+    }
+  }
+
+  async function load(){
+    try{
+      const db = await openDb();
+      const tx = db.transaction(DB_STORE, "readonly");
+      const req = tx.objectStore(DB_STORE).get(DB_KEY);
+      const parsed = await new Promise((resolve, reject)=> {
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error);
+      });
+      db.close();
       if(!parsed || !Array.isArray(parsed.semesters) || !parsed.semesters.length) return false;
       state = {
         activeSemId: parsed.activeSemId || parsed.semesters[0].id,
-        semesters: parsed.semesters
+        semesters: parsed.semesters,
+        student: parsed.student || { name: "", matric: "" }
       };
-      // ensure active exists
       if(!state.semesters.some(s=>s.id===state.activeSemId)) state.activeSemId = state.semesters[0].id;
       return true;
     }catch(e){
-      return false;
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return false;
+        const parsed = JSON.parse(raw);
+        if(!parsed || !Array.isArray(parsed.semesters) || !parsed.semesters.length) return false;
+        state = {
+          activeSemId: parsed.activeSemId || parsed.semesters[0].id,
+          semesters: parsed.semesters,
+          student: parsed.student || { name: "", matric: "" }
+        };
+        if(!state.semesters.some(s=>s.id===state.activeSemId)) state.activeSemId = state.semesters[0].id;
+        return true;
+      }catch(err){
+        return false;
+      }
     }
   }
 
@@ -614,6 +682,8 @@
   function buildReportHtml(){
     const now = new Date();
     const timestamp = now.toLocaleString();
+    const studentName = state.student?.name?.trim() || "Tidak dinyatakan";
+    const studentMatric = state.student?.matric?.trim() || "Tidak dinyatakan";
 
     let allCredits = 0;
     let allPoints = 0;
@@ -666,6 +736,8 @@
         <div>
           <h2>Ringkasan</h2>
           <p>Tarikh & masa (local): <b>${escapeHtml(timestamp)}</b></p>
+          <p>Nama Pelajar: <b>${escapeHtml(studentName)}</b></p>
+          <p>No. Matrik: <b>${escapeHtml(studentMatric)}</b></p>
         </div>
         <div class="summary-grid">
           <div class="summary-card">
@@ -758,6 +830,7 @@
           }
           .summary h2{margin:0 0 8px;font-size:18px;}
           .summary p{margin:0;color:var(--muted);font-size:13px;}
+          .summary p + p{margin-top:4px;}
           .summary-grid{
             display:grid;
             grid-template-columns:repeat(4,minmax(0,1fr));
@@ -880,7 +953,8 @@
 
   function resetAll(){
     localStorage.removeItem(STORAGE_KEY);
-    state = { activeSemId:"", semesters:[] };
+    indexedDB.deleteDatabase(DB_NAME);
+    state = { activeSemId:"", semesters:[], student:{ name:"", matric:"" } };
     ensureAtLeastOneSemester();
     renderAll();
     toast("Semua data direset.");
@@ -954,6 +1028,16 @@
     save();
   });
 
+  els.studentName.addEventListener("input", ()=>{
+    state.student.name = els.studentName.value;
+    save();
+  });
+
+  els.studentMatric.addEventListener("input", ()=>{
+    state.student.matric = els.studentMatric.value;
+    save();
+  });
+
   els.addSemBtn.addEventListener("click", ()=> addSemester(false));
   els.dupSemBtn.addEventListener("click", ()=> addSemester(true));
   els.addCourseBtn.addEventListener("click", addCourseRow);
@@ -969,14 +1053,16 @@
   });
 
   // ===== Init =====
-  (function init(){
-    const ok = load();
+  (async function init(){
+    const ok = await load();
     if(!ok){
       ensureAtLeastOneSemester();
-      save();
+      await save();
     }else{
       ensureAtLeastOneSemester();
     }
+    els.studentName.value = state.student?.name || "";
+    els.studentMatric.value = state.student?.matric || "";
     renderAll();
   })();
 </script>
