@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CGPA Calculator milik KP Kesibukan</title>
-  <meta name="description" content="Kira GPA & CGPA (Malaysia grade points). Sesuai untuk GitHub Pages." />
+  <title>CGPA Calculator • Multi-Semester</title>
+  <meta name="description" content="Kira GPA & CGPA (multi-semester), autosave, import/export JSON. Sesuai untuk GitHub Pages." />
   <style>
     :root{
       --bg:#0b1020;
@@ -13,6 +13,7 @@
       --muted:#a9b3d1;
       --line:#23305c;
       --accent:#7c5cff;
+      --accent2:#2ee59d;
       --danger:#ff5c7a;
       --shadow: 0 10px 25px rgba(0,0,0,.35);
       --radius:16px;
@@ -21,22 +22,29 @@
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
-      background: radial-gradient(1200px 600px at 20% 0%, rgba(124,92,255,.25), transparent 60%),
-                  radial-gradient(900px 500px at 85% 10%, rgba(46,229,157,.18), transparent 55%),
-                  var(--bg);
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(124,92,255,.25), transparent 60%),
+        radial-gradient(900px 500px at 85% 10%, rgba(46,229,157,.18), transparent 55%),
+        var(--bg);
       color:var(--text);
       min-height:100vh;
     }
-    .wrap{max-width:980px;margin:0 auto;padding:28px 16px 60px;}
-    header{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px;}
+    a{color:inherit}
+    .wrap{max-width:1100px;margin:0 auto;padding:26px 14px 60px;}
+    header{
+      display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:14px;
+    }
     h1{margin:0;font-size:clamp(22px,3vw,34px);letter-spacing:.3px}
-    .sub{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.4}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
     .pill{
       font-size:12px;color:var(--muted);
       border:1px solid rgba(255,255,255,.12);
       padding:6px 10px;border-radius:999px;user-select:none;
-      background: rgba(17,26,51,.35);
+      background: rgba(18,26,51,.35);
+      display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;
     }
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0 12px;}
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
       border: 1px solid rgba(255,255,255,.08);
@@ -45,26 +53,70 @@
       overflow:hidden;
     }
     .top{
-      padding:16px 16px 10px;
+      padding:14px 14px 10px;
       border-bottom:1px solid rgba(255,255,255,.08);
       display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
     }
     .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-    button{
+    button, .btn{
       border:0;cursor:pointer;border-radius:12px;padding:10px 12px;font-weight:650;
       letter-spacing:.2px;color:var(--text);
       background: rgba(255,255,255,.08);
       border: 1px solid rgba(255,255,255,.12);
       transition: transform .08s ease, background .2s ease, border-color .2s ease;
       display:inline-flex;align-items:center;gap:8px;
+      text-decoration:none;
     }
-    button:hover{background: rgba(255,255,255,.12);border-color: rgba(255,255,255,.18);}
-    button:active{transform: translateY(1px);}
-    .primary{background: linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.72));border-color: rgba(124,92,255,.55);}
+    button:hover,.btn:hover{background: rgba(255,255,255,.12);border-color: rgba(255,255,255,.18);}
+    button:active,.btn:active{transform: translateY(1px);}
+    .primary{
+      background: linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.72));
+      border-color: rgba(124,92,255,.55);
+    }
     .primary:hover{background: linear-gradient(180deg, rgba(124,92,255,1), rgba(124,92,255,.78));}
-    .danger{background: rgba(255,92,122,.12);border-color: rgba(255,92,122,.35);color:#ffd7de;}
+    .ok{
+      background: rgba(46,229,157,.12);
+      border-color: rgba(46,229,157,.35);
+      color:#d9fff0;
+    }
+    .ok:hover{background: rgba(46,229,157,.18);border-color: rgba(46,229,157,.5);}
+    .danger{
+      background: rgba(255,92,122,.12);
+      border-color: rgba(255,92,122,.35);
+      color:#ffd7de;
+    }
     .danger:hover{background: rgba(255,92,122,.18);border-color: rgba(255,92,122,.5);}
-    .tableWrap{padding:10px 16px 16px;}
+
+    .seg{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+      padding:10px 14px 0;
+    }
+    .seg label{font-size:13px;color:var(--muted)}
+    select, input{
+      width:100%;
+      padding:10px 10px;border-radius:10px;outline:none;
+      color:var(--text);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      font-size:14px;
+    }
+    input::placeholder{color: rgba(169,179,209,.65);}
+    input:focus, select:focus{border-color: rgba(124,92,255,.65);box-shadow: 0 0 0 3px rgba(124,92,255,.18);}
+
+    .content{padding:12px 14px 14px;}
+    .semesterHead{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+      padding:10px 14px 0;
+    }
+    .semesterTitle{
+      display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    }
+    .semesterTitle b{font-size:14px}
+    .small{font-size:12px;color:var(--muted)}
+    .inline{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .w200{min-width:200px}
+    .w260{min-width:260px}
+    .tableWrap{padding:10px 0 0;}
     table{
       width:100%;
       border-collapse:separate;border-spacing:0;
@@ -80,21 +132,14 @@
     tbody td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;}
     tbody tr:last-child td{border-bottom:0;}
     .cellStack{display:flex;flex-direction:column;gap:6px;}
-    input, select{
-      width:100%;
-      padding:10px 10px;border-radius:10px;outline:none;
-      color:var(--text);
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      font-size:14px;
-    }
-    input::placeholder{color: rgba(169,179,209,.65);}
-    input:focus, select:focus{border-color: rgba(124,92,255,.65);box-shadow: 0 0 0 3px rgba(124,92,255,.18);}
     .err{display:none;color:#ffd0d9;font-size:12px;line-height:1.2;}
     .hasErr .err{display:block;}
     .hasErr input, .hasErr select{border-color: rgba(255,92,122,.65);box-shadow: 0 0 0 3px rgba(255,92,122,.16);}
     .rowBtn{padding:9px 10px;border-radius:10px;font-size:13px;white-space:nowrap;}
-    .grid{margin-top:16px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+    .grid{
+      margin-top:14px;
+      display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+    }
     .stat{
       background: rgba(18,26,51,.55);
       border:1px solid rgba(255,255,255,.10);
@@ -104,170 +149,515 @@
     }
     .stat .k{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
     .stat .v{margin-top:6px;font-size:22px;font-weight:800;letter-spacing:.2px;}
-    .hint{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.5;}
-    .footerNote{margin-top:10px;color: rgba(169,179,209,.75);font-size:12px;line-height:1.5;}
-    .footerNote code{color:#d9ddff}
+    .hint{margin-top:12px;color:var(--muted);font-size:13px;line-height:1.55;}
+    .footer{
+      margin-top:10px;color: rgba(169,179,209,.75);font-size:12px;line-height:1.55;
+      padding:0 2px;
+    }
+    .toast{
+      position:fixed;left:50%;transform:translateX(-50%);
+      bottom:16px;
+      background: rgba(18,26,51,.92);
+      border:1px solid rgba(255,255,255,.14);
+      padding:10px 12px;border-radius:12px;
+      color:var(--text);
+      box-shadow: var(--shadow);
+      display:none;
+      max-width:min(720px,calc(100% - 28px));
+      font-size:13px;
+    }
+    .toast.show{display:block;animation:pop .18s ease;}
+    @keyframes pop{from{transform:translateX(-50%) translateY(6px);opacity:.4}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
     .mobileLabel{display:none;}
-    @media (max-width:900px){
+    @media (max-width: 950px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+    @media (max-width: 900px){
       thead{display:none;}
       table,tbody,tr,td{display:block;width:100%;}
       tbody td{border-bottom:0;padding:10px 12px 6px;}
       tbody tr{border-bottom:1px solid rgba(255,255,255,.08);}
       tbody tr:last-child{border-bottom:0;}
       .mobileLabel{display:block;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:6px;}
-      .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+      .w200,.w260{min-width:unset;width:100%;}
+      .semesterHead{gap:12px}
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div>
-        <h1>CGPA Calculator KP Ksibukan</h1>
-        <p class="sub">Masukkan subjek, kredit dan gred. Tekan <b>Kira</b> untuk dapatkan keputusan. Data auto-simpan (localStorage).</p>
-      </div>
-      <div class="pill" id="autosavePill">Autosave: ON</div>
-    </header>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>CGPA Calculator</h1>
+      <p class="sub">
+        Versi ditambah baik: <b>multi-semester</b>, kiraan live, autosave, import/export JSON.
+      </p>
+    </div>
+    <div class="pill" id="statusPill">Autosave: ON • Live calc: ON</div>
+  </header>
 
-    <section class="card">
-      <div class="top">
-        <div class="pill">
-          Skala: A=4.00 • A-=3.67 • B+=3.33 • B=3.00 • B-=2.67 • C+=2.33 • C=2.00 • C-=1.67 • D+=1.33 • D=1.00 • F=0.00
+  <div class="row">
+    <div class="pill">
+      Skala: A=4.00 • A-=3.67 • B+=3.33 • B=3.00 • B-=2.67 • C+=2.33 • C=2.00 • C-=1.67 • D+=1.33 • D=1.00 • F=0.00
+    </div>
+    <div class="actions">
+      <button id="addSemBtn" class="ok" type="button">📚 Tambah Semester</button>
+      <button id="exportBtn" type="button">⬇️ Export JSON</button>
+      <label class="btn" for="importFile" style="cursor:pointer">⬆️ Import JSON</label>
+      <input id="importFile" type="file" accept="application/json" style="display:none" />
+      <button id="resetAllBtn" class="danger" type="button">♻️ Reset Semua</button>
+    </div>
+  </div>
+
+  <section class="card">
+    <div class="top">
+      <div class="pill">
+        Tips: Edit nama semester, tambah subjek, masukkan kredit & pilih gred. Kiraan auto update.
+      </div>
+      <div class="actions">
+        <button id="addCourseBtn" class="primary" type="button">➕ Tambah Subjek</button>
+        <button id="dupSemBtn" type="button">🧷 Duplicate Semester</button>
+        <button id="clearSemBtn" class="danger" type="button">🧹 Kosongkan Semester</button>
+      </div>
+    </div>
+
+    <div class="semesterHead">
+      <div class="semesterTitle">
+        <b>Semester Aktif</b>
+        <span class="small">Pilih semester di kanan</span>
+      </div>
+      <div class="inline">
+        <div class="w260">
+          <label class="small" for="semSelect">Pilih Semester</label>
+          <select id="semSelect"></select>
         </div>
-        <div class="actions">
-          <button id="addBtn" type="button">➕ Tambah Subjek</button>
-          <button id="calcBtn" class="primary" type="button">🧮 Kira</button>
-          <button id="resetBtn" class="danger" type="button">♻️ Reset</button>
+        <div class="w260">
+          <label class="small" for="semName">Nama Semester</label>
+          <input id="semName" type="text" placeholder="Contoh: Semester 1 (2025/2026)" />
         </div>
       </div>
+    </div>
 
+    <div class="content">
       <div class="tableWrap">
         <table aria-label="Jadual subjek">
           <thead>
             <tr>
-              <th style="width:44%">Nama Subjek (optional)</th>
-              <th style="width:18%">Kredit</th>
+              <th style="width:46%">Nama Subjek (optional)</th>
+              <th style="width:16%">Kredit</th>
               <th style="width:22%">Gred</th>
               <th style="width:16%">Tindakan</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
+      </div>
 
-        <div class="grid" aria-label="Keputusan">
-          <div class="stat">
-            <div class="k">Total Kredit</div>
-            <div class="v" id="outCredits">0.00</div>
-          </div>
-          <div class="stat">
-            <div class="k">Total Mata</div>
-            <div class="v" id="outPoints">0.00</div>
-          </div>
-          <div class="stat">
-            <div class="k">GPA</div>
-            <div class="v" id="outGPA">0.00</div>
-          </div>
-          <div class="stat">
-            <div class="k">CGPA</div>
-            <div class="v" id="outCGPA">0.00</div>
-          </div>
+      <div class="grid" aria-label="Keputusan">
+        <div class="stat">
+          <div class="k">GPA Semester</div>
+          <div class="v" id="outSemGPA">0.00</div>
         </div>
-
-        <div class="hint">
-          <b>Nota:</b> CGPA di sini dikira berdasarkan semua subjek yang dimasukkan (gabungan). Jika mahu versi “ikut semester”, saya boleh buat.
+        <div class="stat">
+          <div class="k">Kredit Semester</div>
+          <div class="v" id="outSemCredits">0.00</div>
         </div>
-
-        <div class="footerNote">
-          <b>GitHub Pages:</b> Pastikan fail bernama <code>index.html</code> (huruf kecil) dan letak di root repo. Settings → Pages → Branch: <code>main</code>, Folder: <code>/(root)</code>.
+        <div class="stat">
+          <div class="k">CGPA Keseluruhan</div>
+          <div class="v" id="outCGPA">0.00</div>
+        </div>
+        <div class="stat">
+          <div class="k">Jumlah Kredit</div>
+          <div class="v" id="outAllCredits">0.00</div>
         </div>
       </div>
-    </section>
-  </div>
 
-  <script>
-    // ===== Grade points (Malaysia standard) =====
-    const GRADE_POINTS = {
-      "A": 4.00,
-      "A-": 3.67,
-      "B+": 3.33,
-      "B": 3.00,
-      "B-": 2.67,
-      "C+": 2.33,
-      "C": 2.00,
-      "C-": 1.67,
-      "D+": 1.33,
-      "D": 1.00,
-      "F": 0.00
+      <div class="hint">
+        <b>Nota:</b> Formula: TotalPoints = Σ(kredit×gradePoint), GPA/CGPA = TotalPoints / TotalCredits.
+        Jika ada input tak valid (kredit kosong/0 atau gred belum pilih), baris itu akan ditanda merah.
+      </div>
+
+      <div class="footer">
+        <b>Deploy GitHub Pages:</b> pastikan fail bernama <code>index.html</code> di root repo.
+        Settings → Pages → Branch: <code>main</code>, Folder: <code>/(root)</code>.
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ===== Grade points (Malaysia standard) =====
+  const GRADE_POINTS = {
+    "A": 4.00, "A-": 3.67, "B+": 3.33, "B": 3.00, "B-": 2.67,
+    "C+": 2.33, "C": 2.00, "C-": 1.67, "D+": 1.33, "D": 1.00, "F": 0.00
+  };
+
+  const STORAGE_KEY = "cgpa_multi_sem_v1";
+
+  const els = {
+    statusPill: document.getElementById("statusPill"),
+    addSemBtn: document.getElementById("addSemBtn"),
+    exportBtn: document.getElementById("exportBtn"),
+    importFile: document.getElementById("importFile"),
+    resetAllBtn: document.getElementById("resetAllBtn"),
+    addCourseBtn: document.getElementById("addCourseBtn"),
+    dupSemBtn: document.getElementById("dupSemBtn"),
+    clearSemBtn: document.getElementById("clearSemBtn"),
+    semSelect: document.getElementById("semSelect"),
+    semName: document.getElementById("semName"),
+    tbody: document.getElementById("tbody"),
+    outSemGPA: document.getElementById("outSemGPA"),
+    outSemCredits: document.getElementById("outSemCredits"),
+    outCGPA: document.getElementById("outCGPA"),
+    outAllCredits: document.getElementById("outAllCredits"),
+    toast: document.getElementById("toast")
+  };
+
+  // ===== App State =====
+  let state = {
+    activeSemId: "",
+    semesters: [
+      // { id, name, rows: [{course, credit, grade}] }
+    ]
+  };
+
+  function uid(){
+    return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+  }
+
+  function fmt2(n){
+    if (!isFinite(n)) return "0.00";
+    return Number(n).toFixed(2);
+  }
+
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function toast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(()=>els.toast.classList.remove("show"), 2400);
+  }
+
+  function createGradeOptions(selected=""){
+    const order = ["", "A","A-","B+","B","B-","C+","C","C-","D+","D","F"];
+    return order.map(g=>{
+      if(g==="") return `<option value="" ${selected===""?"selected":""} disabled>Pilih gred</option>`;
+      return `<option value="${g}" ${selected===g?"selected":""}>${g} (${GRADE_POINTS[g].toFixed(2)})</option>`;
+    }).join("");
+  }
+
+  function defaultRows(n=5){
+    return Array.from({length:n}, ()=>({course:"", credit:"", grade:""}));
+  }
+
+  function getActiveSem(){
+    return state.semesters.find(s=>s.id===state.activeSemId) || null;
+  }
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...state, ts: Date.now() }));
+  }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return false;
+      const parsed = JSON.parse(raw);
+      if(!parsed || !Array.isArray(parsed.semesters) || !parsed.semesters.length) return false;
+      state = {
+        activeSemId: parsed.activeSemId || parsed.semesters[0].id,
+        semesters: parsed.semesters
+      };
+      // ensure active exists
+      if(!state.semesters.some(s=>s.id===state.activeSemId)) state.activeSemId = state.semesters[0].id;
+      return true;
+    }catch(e){
+      return false;
+    }
+  }
+
+  function ensureAtLeastOneSemester(){
+    if(state.semesters.length) return;
+    const id = uid();
+    state.semesters = [{ id, name:"Semester 1", rows: defaultRows(5) }];
+    state.activeSemId = id;
+  }
+
+  // ===== Rendering =====
+  function renderSemesterSelect(){
+    const opts = state.semesters.map((s, i)=> {
+      const label = s.name?.trim() ? s.name.trim() : `Semester ${i+1}`;
+      return `<option value="${s.id}">${escapeHtml(label)}</option>`;
+    }).join("");
+    els.semSelect.innerHTML = opts;
+    els.semSelect.value = state.activeSemId;
+
+    const active = getActiveSem();
+    els.semName.value = active?.name ?? "";
+  }
+
+  function rowTemplate(r={}, idx=0){
+    const course = r.course ?? "";
+    const credit = (r.credit ?? "") === "" ? "" : String(r.credit);
+    const grade  = r.grade ?? "";
+    return `
+      <tr data-idx="${idx}">
+        <td>
+          <div class="cellStack" data-field="course">
+            <span class="mobileLabel">Nama Subjek (optional)</span>
+            <input type="text" placeholder="Contoh: Kesihatan Awam" value="${escapeHtml(course)}" />
+            <div class="err">—</div>
+          </div>
+        </td>
+        <td>
+          <div class="cellStack" data-field="credit">
+            <span class="mobileLabel">Kredit</span>
+            <input type="number" inputmode="decimal" min="0" step="0.5" placeholder="Contoh: 3" value="${escapeHtml(credit)}" />
+            <div class="err">Kredit mesti nombor &gt; 0.</div>
+          </div>
+        </td>
+        <td>
+          <div class="cellStack" data-field="grade">
+            <span class="mobileLabel">Gred</span>
+            <select>${createGradeOptions(grade)}</select>
+            <div class="err">Sila pilih gred.</div>
+          </div>
+        </td>
+        <td>
+          <span class="mobileLabel">Tindakan</span>
+          <button class="rowBtn danger" type="button" data-action="remove">🗑️ Padam</button>
+        </td>
+      </tr>
+    `;
+  }
+
+  function renderTable(){
+    const sem = getActiveSem();
+    els.tbody.innerHTML = (sem?.rows || []).map((r,i)=>rowTemplate(r,i)).join("");
+    wireRowListeners();
+  }
+
+  function setError(elStack, isErr){
+    if(isErr) elStack.classList.add("hasErr");
+    else elStack.classList.remove("hasErr");
+  }
+
+  function validateAndCompute(){
+    const sem = getActiveSem();
+    if(!sem) return;
+
+    let semCredits=0, semPoints=0;
+
+    // validate active semester rows (mark errors)
+    [...els.tbody.querySelectorAll("tr")].forEach((tr, idx)=>{
+      const creditStack = tr.querySelector('[data-field="credit"]');
+      const gradeStack  = tr.querySelector('[data-field="grade"]');
+      const creditInput = creditStack.querySelector("input");
+      const gradeSelect = gradeStack.querySelector("select");
+
+      const c = creditInput.value==="" ? NaN : Number(creditInput.value);
+      const gp = GRADE_POINTS[gradeSelect.value];
+
+      const creditBad = !(isFinite(c) && c > 0);
+      const gradeBad  = !gradeSelect.value;
+
+      setError(creditStack, creditBad);
+      setError(gradeStack, gradeBad);
+
+      // compute only if valid
+      if(!creditBad && !gradeBad){
+        semCredits += c;
+        semPoints  += c * gp;
+      }
+
+      // sync into state
+      const tds = tr.querySelectorAll("td");
+      sem.rows[idx] = {
+        course: tds[0].querySelector("input").value.trim(),
+        credit: creditInput.value==="" ? "" : Number(creditInput.value),
+        grade: gradeSelect.value
+      };
+    });
+
+    const semGPA = semCredits>0 ? semPoints/semCredits : 0;
+    els.outSemCredits.textContent = fmt2(semCredits);
+    els.outSemGPA.textContent = fmt2(semGPA);
+
+    // compute overall CGPA across all semesters (valid rows only)
+    let allCredits=0, allPoints=0;
+    for(const s of state.semesters){
+      for(const r of s.rows){
+        const c = Number(r.credit);
+        const gp = GRADE_POINTS[r.grade];
+        if(!(isFinite(c) && c>0)) continue;
+        if(gp===undefined) continue;
+        allCredits += c;
+        allPoints  += c * gp;
+      }
+    }
+    const cgpa = allCredits>0 ? allPoints/allCredits : 0;
+    els.outAllCredits.textContent = fmt2(allCredits);
+    els.outCGPA.textContent = fmt2(cgpa);
+
+    save();
+  }
+
+  function wireRowListeners(){
+    [...els.tbody.querySelectorAll("tr")].forEach((tr, idx)=>{
+      tr.querySelectorAll("input, select").forEach(el=>{
+        el.addEventListener("input", ()=> validateAndCompute());
+        el.addEventListener("change", ()=> validateAndCompute());
+      });
+      tr.querySelector('button[data-action="remove"]').addEventListener("click", ()=>{
+        const sem = getActiveSem();
+        sem.rows.splice(idx, 1);
+        if(sem.rows.length===0) sem.rows = defaultRows(1);
+        renderTable();
+        validateAndCompute();
+      });
+    });
+  }
+
+  // ===== Actions =====
+  function addSemester(copyFromActive=false){
+    const id = uid();
+    const active = getActiveSem();
+    const n = state.semesters.length + 1;
+    const newSem = {
+      id,
+      name: `Semester ${n}`,
+      rows: copyFromActive ? JSON.parse(JSON.stringify(active?.rows || defaultRows(5))) : defaultRows(5)
     };
+    state.semesters.push(newSem);
+    state.activeSemId = id;
+    renderAll();
+    toast(copyFromActive ? "Semester diduplikasi." : "Semester baru ditambah.");
+  }
 
-    const STORAGE_KEY = "cgpa_calc_complete_v1";
+  function addCourseRow(){
+    const sem = getActiveSem();
+    sem.rows.push({course:"", credit:"", grade:""});
+    renderTable();
+    validateAndCompute();
+  }
 
-    const tbody = document.getElementById("tbody");
-    const addBtn = document.getElementById("addBtn");
-    const calcBtn = document.getElementById("calcBtn");
-    const resetBtn = document.getElementById("resetBtn");
+  function clearActiveSemester(){
+    const sem = getActiveSem();
+    sem.rows = defaultRows(5);
+    renderTable();
+    validateAndCompute();
+    toast("Semester dikosongkan.");
+  }
 
-    const outCredits = document.getElementById("outCredits");
-    const outPoints  = document.getElementById("outPoints");
-    const outGPA     = document.getElementById("outGPA");
-    const outCGPA    = document.getElementById("outCGPA");
+  function resetAll(){
+    localStorage.removeItem(STORAGE_KEY);
+    state = { activeSemId:"", semesters:[] };
+    ensureAtLeastOneSemester();
+    renderAll();
+    toast("Semua data direset.");
+  }
 
-    function fmt2(n){
-      if (!isFinite(n)) return "0.00";
-      return Number(n).toFixed(2);
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "cgpa-data.json";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast("Fail JSON diexport.");
+  }
+
+  function importJSON(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(reader.result);
+        if(!parsed || !Array.isArray(parsed.semesters) || parsed.semesters.length===0){
+          toast("JSON tidak sah.");
+          return;
+        }
+        // normalize
+        parsed.semesters.forEach((s,i)=>{
+          if(!s.id) s.id = uid();
+          if(!Array.isArray(s.rows)) s.rows = defaultRows(5);
+          if(!s.name) s.name = `Semester ${i+1}`;
+          s.rows = s.rows.map(r=>({
+            course: r?.course ?? "",
+            credit: (r?.credit ?? "") === "" ? "" : Number(r.credit),
+            grade: r?.grade ?? ""
+          }));
+        });
+        state.semesters = parsed.semesters;
+        state.activeSemId = parsed.activeSemId && state.semesters.some(s=>s.id===parsed.activeSemId)
+          ? parsed.activeSemId
+          : state.semesters[0].id;
+
+        renderAll();
+        toast("JSON berjaya diimport.");
+      }catch(e){
+        toast("Gagal import: JSON tidak sah.");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function renderAll(){
+    renderSemesterSelect();
+    renderTable();
+    validateAndCompute();
+  }
+
+  // ===== UI wiring =====
+  els.semSelect.addEventListener("change", ()=>{
+    state.activeSemId = els.semSelect.value;
+    renderAll();
+  });
+
+  els.semName.addEventListener("input", ()=>{
+    const sem = getActiveSem();
+    sem.name = els.semName.value;
+    renderSemesterSelect(); // keep dropdown label updated
+    save();
+  });
+
+  els.addSemBtn.addEventListener("click", ()=> addSemester(false));
+  els.dupSemBtn.addEventListener("click", ()=> addSemester(true));
+  els.addCourseBtn.addEventListener("click", addCourseRow);
+  els.clearSemBtn.addEventListener("click", clearActiveSemester);
+  els.resetAllBtn.addEventListener("click", resetAll);
+  els.exportBtn.addEventListener("click", exportJSON);
+
+  els.importFile.addEventListener("change", (e)=>{
+    const f = e.target.files?.[0];
+    if(f) importJSON(f);
+    e.target.value = "";
+  });
+
+  // ===== Init =====
+  (function init(){
+    const ok = load();
+    if(!ok){
+      ensureAtLeastOneSemester();
+      save();
+    }else{
+      ensureAtLeastOneSemester();
     }
-
-    function escapeHtml(str){
-      return String(str ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function createGradeOptions(selected = ""){
-      const order = ["", "A","A-","B+","B","B-","C+","C","C-","D+","D","F"];
-      return order.map(g => {
-        if (g === "") return `<option value="" ${selected===""?"selected":""} disabled>Pilih gred</option>`;
-        return `<option value="${g}" ${selected===g?"selected":""}>${g} (${GRADE_POINTS[g].toFixed(2)})</option>`;
-      }).join("");
-    }
-
-    function rowTemplate(data = {}, idx = 0){
-      const course = data.course ?? "";
-      const credit = (data.credit ?? "") === "" ? "" : String(data.credit);
-      const grade  = data.grade ?? "";
-      return `
-        <tr data-idx="${idx}">
-          <td>
-            <div class="cellStack" data-field="course">
-              <span class="mobileLabel">Nama Subjek (optional)</span>
-              <input type="text" placeholder="Contoh: Biostatistik" value="${escapeHtml(course)}" />
-              <div class="err">—</div>
-            </div>
-          </td>
-          <td>
-            <div class="cellStack" data-field="credit">
-              <span class="mobileLabel">Kredit</span>
-              <input type="number" inputmode="decimal" min="0" step="0.5" placeholder="Contoh: 3" value="${escapeHtml(credit)}" />
-              <div class="err">Kredit mesti nombor &gt; 0.</div>
-            </div>
-          </td>
-          <td>
-            <div class="cellStack" data-field="grade">
-              <span class="mobileLabel">Gred</span>
-              <select>${createGradeOptions(grade)}</select>
-              <div class="err">Sila pilih gred.</div>
-            </div>
-          </td>
-          <td>
-            <span class="mobileLabel">Tindakan</span>
-            <button class="rowBtn danger" type="button" data-action="remove">🗑️ Padam</button>
-          </td>
-        </tr>
-      `;
-    }
-
-    function getRowsData(){
-      const rows = [..]()
+    renderAll();
+  })();
+</script>
+</body>
+</html>
