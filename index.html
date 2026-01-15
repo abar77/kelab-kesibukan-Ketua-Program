@@ -7,7 +7,7 @@
   <meta name="description" content="Kira GPA & CGPA (multi-semester), autosave, import/export JSON. Sesuai untuk GitHub Pages." />
   <style>
     :root{
-      --bg:#0b1020;
+      --bg:#0a0f1f;
       --card:#121a33;
       --text:#eef2ff;
       --muted:#a9b3d1;
@@ -15,28 +15,41 @@
       --accent:#7c5cff;
       --accent2:#2ee59d;
       --danger:#ff5c7a;
-      --shadow: 0 10px 25px rgba(0,0,0,.35);
-      --radius:16px;
+      --shadow: 0 16px 35px rgba(4,6,20,.45);
+      --radius:18px;
     }
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
       background:
-        radial-gradient(1200px 600px at 20% 0%, rgba(124,92,255,.25), transparent 60%),
-        radial-gradient(900px 500px at 85% 10%, rgba(46,229,157,.18), transparent 55%),
-        var(--bg);
+        radial-gradient(1200px 600px at 12% 2%, rgba(124,92,255,.28), transparent 60%),
+        radial-gradient(900px 500px at 88% 8%, rgba(46,229,157,.18), transparent 55%),
+        radial-gradient(1000px 600px at 50% 100%, rgba(255,92,122,.16), transparent 60%),
+        linear-gradient(180deg, rgba(9,12,24,.92), rgba(9,12,24,1));
       color:var(--text);
       min-height:100vh;
+      position:relative;
+      overflow-x:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(700px 320px at 80% 90%, rgba(124,92,255,.12), transparent 60%),
+        radial-gradient(500px 200px at 10% 80%, rgba(46,229,157,.08), transparent 55%);
+      pointer-events:none;
+      z-index:-1;
     }
     a{color:inherit}
-    .wrap{max-width:1100px;margin:0 auto;padding:26px 14px 60px;}
+    .wrap{max-width:1140px;margin:0 auto;padding:28px 16px 70px;}
     header{
-      display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;
-      margin-bottom:14px;
+      display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      margin-bottom:20px;
     }
-    h1{margin:0;font-size:clamp(22px,3vw,34px);letter-spacing:.3px}
-    .sub{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.45}
+    h1{margin:0;font-size:clamp(22px,3vw,36px);letter-spacing:.3px}
+    .sub{margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
     .pill{
       font-size:12px;color:var(--muted);
       border:1px solid rgba(255,255,255,.12);
@@ -44,14 +57,46 @@
       background: rgba(18,26,51,.35);
       display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap;
     }
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:10px 0 12px;}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:14px 0 16px;}
     .card{
       background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
       border: 1px solid rgba(255,255,255,.08);
       box-shadow: var(--shadow);
       border-radius: var(--radius);
       overflow:hidden;
+      backdrop-filter: blur(6px);
     }
+    .hero{
+      display:grid;
+      grid-template-columns: minmax(0,1.2fr) minmax(0,.8fr);
+      gap:16px;
+      padding:20px 22px;
+      align-items:center;
+      background:
+        radial-gradient(400px 200px at 90% 10%, rgba(124,92,255,.25), transparent 60%),
+        rgba(18,26,51,.45);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:20px;
+      margin-bottom:18px;
+    }
+    .hero h2{
+      margin:0 0 8px;
+      font-size:clamp(20px,2.4vw,28px);
+    }
+    .hero p{margin:0;color:var(--muted);line-height:1.6;font-size:14px;}
+    .hero-cta{margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;}
+    .hero-art{
+      position:relative;
+      border-radius:18px;
+      overflow:hidden;
+      background: linear-gradient(145deg, rgba(124,92,255,.22), rgba(46,229,157,.12));
+      border:1px solid rgba(255,255,255,.08);
+      min-height:190px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .hero-art svg{width:100%;height:100%;display:block;}
     .top{
       padding:14px 14px 10px;
       border-bottom:1px solid rgba(255,255,255,.08);
@@ -170,6 +215,9 @@
     @keyframes pop{from{transform:translateX(-50%) translateY(6px);opacity:.4}to{transform:translateX(-50%) translateY(0);opacity:1}}
 
     .mobileLabel{display:none;}
+    @media (max-width: 980px){
+      .hero{grid-template-columns:1fr;}
+    }
     @media (max-width: 950px){
       .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
     }
@@ -197,12 +245,44 @@
     <div class="pill" id="statusPill">Autosave: ON • Live calc: ON</div>
   </header>
 
+  <section class="hero">
+    <div>
+      <h2>Pantau prestasi akademik dengan paparan yang lebih kemas.</h2>
+      <p>
+        Kemas kini UI ini menambah tema latar yang lebih menarik, ilustrasi ringkas, serta fungsi
+        <b>Download PDF</b> untuk simpan laporan CGPA dalam format profesional.
+      </p>
+      <div class="hero-cta">
+        <button id="downloadPdfBtn" class="primary" type="button">⬇️ Download PDF</button>
+        <button id="addSemBtn" class="ok" type="button">📚 Tambah Semester</button>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <svg viewBox="0 0 520 320" role="img" focusable="false">
+        <defs>
+          <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c5cff" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#2ee59d" stop-opacity="0.85" />
+          </linearGradient>
+        </defs>
+        <rect width="520" height="320" rx="22" fill="url(#grad)" opacity="0.35" />
+        <circle cx="110" cy="90" r="46" fill="#fff" opacity="0.25" />
+        <circle cx="420" cy="70" r="32" fill="#fff" opacity="0.18" />
+        <path d="M80 210h320a20 20 0 0 1 20 20v40a14 14 0 0 1-14 14H94a14 14 0 0 1-14-14v-44a16 16 0 0 1 16-16z" fill="#0b1020" opacity="0.9" />
+        <rect x="110" y="140" width="300" height="18" rx="9" fill="#0b1020" opacity="0.7" />
+        <rect x="110" y="170" width="250" height="14" rx="7" fill="#0b1020" opacity="0.55" />
+        <rect x="110" y="235" width="180" height="18" rx="9" fill="#7c5cff" opacity="0.8" />
+        <rect x="110" y="260" width="220" height="10" rx="5" fill="#2ee59d" opacity="0.7" />
+        <text x="110" y="95" fill="#ffffff" font-size="16" font-family="Segoe UI, Arial" opacity="0.7">CGPA Report</text>
+      </svg>
+    </div>
+  </section>
+
   <div class="row">
     <div class="pill">
       Skala: A=4.00 • A-=3.67 • B+=3.33 • B=3.00 • B-=2.67 • C+=2.33 • C=2.00 • C-=1.67 • D+=1.33 • D=1.00 • F=0.00
     </div>
     <div class="actions">
-      <button id="addSemBtn" class="ok" type="button">📚 Tambah Semester</button>
       <button id="exportBtn" type="button">⬇️ Export JSON</button>
       <label class="btn" for="importFile" style="cursor:pointer">⬆️ Import JSON</label>
       <input id="importFile" type="file" accept="application/json" style="display:none" />
@@ -313,7 +393,8 @@
     outSemCredits: document.getElementById("outSemCredits"),
     outCGPA: document.getElementById("outCGPA"),
     outAllCredits: document.getElementById("outAllCredits"),
-    toast: document.getElementById("toast")
+    toast: document.getElementById("toast"),
+    downloadPdfBtn: document.getElementById("downloadPdfBtn")
   };
 
   // ===== App State =====
@@ -529,6 +610,243 @@
     });
   }
 
+  // ===== Report PDF =====
+  function buildReportHtml(){
+    const now = new Date();
+    const timestamp = now.toLocaleString();
+
+    let allCredits = 0;
+    let allPoints = 0;
+    const semesterSummaries = state.semesters.map((sem, index)=>{
+      let semCredits = 0;
+      let semPoints = 0;
+      const rowsHtml = sem.rows.map(r => {
+        const c = Number(r.credit);
+        const gp = GRADE_POINTS[r.grade];
+        const validCredit = isFinite(c) && c > 0;
+        const validGrade = gp !== undefined;
+        const creditPoint = validCredit && validGrade ? (c * gp) : null;
+        if (validCredit && validGrade) {
+          semCredits += c;
+          semPoints += c * gp;
+        }
+        const courseLabel = r.course?.trim() ? r.course.trim() : "-";
+        return `
+          <tr>
+            <td>${escapeHtml(courseLabel)}</td>
+            <td>${validCredit ? fmt2(c) : "-"}</td>
+            <td>${validGrade ? escapeHtml(r.grade) : "-"}</td>
+            <td>${validGrade ? gp.toFixed(2) : "-"}</td>
+            <td>${creditPoint !== null ? fmt2(creditPoint) : "-"}</td>
+          </tr>
+        `;
+      }).join("");
+
+      allCredits += semCredits;
+      allPoints += semPoints;
+
+      const semGPA = semCredits > 0 ? semPoints / semCredits : 0;
+      const semName = sem.name?.trim() ? sem.name.trim() : `Semester ${index + 1}`;
+      return {
+        name: semName,
+        rowsHtml: rowsHtml || "<tr><td colspan=\"5\">Tiada data.</td></tr>",
+        semCredits: fmt2(semCredits),
+        semGPA: fmt2(semGPA)
+      };
+    });
+
+    const cgpa = allCredits > 0 ? allPoints / allCredits : 0;
+    const activeSem = getActiveSem();
+    const activeSummary = activeSem
+      ? semesterSummaries[state.semesters.findIndex(s => s.id === activeSem.id)]
+      : null;
+
+    const summaryHtml = `
+      <section class="summary">
+        <div>
+          <h2>Ringkasan</h2>
+          <p>Tarikh & masa (local): <b>${escapeHtml(timestamp)}</b></p>
+        </div>
+        <div class="summary-grid">
+          <div class="summary-card">
+            <span>GPA Semester Aktif</span>
+            <strong>${activeSummary ? activeSummary.semGPA : fmt2(0)}</strong>
+          </div>
+          <div class="summary-card">
+            <span>Kredit Semester Aktif</span>
+            <strong>${activeSummary ? activeSummary.semCredits : fmt2(0)}</strong>
+          </div>
+          <div class="summary-card">
+            <span>CGPA Keseluruhan</span>
+            <strong>${fmt2(cgpa)}</strong>
+          </div>
+          <div class="summary-card">
+            <span>Jumlah Kredit</span>
+            <strong>${fmt2(allCredits)}</strong>
+          </div>
+        </div>
+      </section>
+    `;
+
+    const semesterBlocks = semesterSummaries.map(summary => `
+      <section class="semester-block">
+        <div class="semester-head">
+          <h3>${escapeHtml(summary.name)}</h3>
+          <div class="semester-meta">
+            <span>GPA: <b>${summary.semGPA}</b></span>
+            <span>Kredit: <b>${summary.semCredits}</b></span>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Subjek</th>
+              <th>Kredit</th>
+              <th>Gred</th>
+              <th>Grade Point</th>
+              <th>Mata Kredit</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${summary.rowsHtml}
+          </tbody>
+        </table>
+      </section>
+    `).join("");
+
+    return `
+      <!doctype html>
+      <html lang="ms">
+      <head>
+        <meta charset="utf-8" />
+        <title>CGPA Report</title>
+        <style>
+          :root{
+            --text:#111827;
+            --muted:#6b7280;
+            --line:#e5e7eb;
+          }
+          *{box-sizing:border-box}
+          body{
+            margin:0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color:var(--text);
+            background:#f8fafc;
+          }
+          .page{
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 32px 32px 40px;
+            background:#ffffff;
+          }
+          header{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:16px;
+            border-bottom:2px solid var(--line);
+            padding-bottom:12px;
+            margin-bottom:20px;
+          }
+          header h1{
+            margin:0;
+            font-size:26px;
+          }
+          header span{
+            font-size:12px;
+            color:var(--muted);
+          }
+          .summary h2{margin:0 0 8px;font-size:18px;}
+          .summary p{margin:0;color:var(--muted);font-size:13px;}
+          .summary-grid{
+            display:grid;
+            grid-template-columns:repeat(4,minmax(0,1fr));
+            gap:12px;
+            margin-top:12px;
+          }
+          .summary-card{
+            border:1px solid var(--line);
+            border-radius:10px;
+            padding:10px 12px;
+            background:#f8fafc;
+          }
+          .summary-card span{display:block;font-size:12px;color:var(--muted);}
+          .summary-card strong{font-size:16px;}
+          .semester-block{
+            margin-top:20px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .semester-head{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            margin-bottom:8px;
+          }
+          .semester-head h3{margin:0;font-size:16px;}
+          .semester-meta{font-size:12px;color:var(--muted);display:flex;gap:12px;}
+          table{
+            width:100%;
+            border-collapse:collapse;
+            font-size:12px;
+            border:1px solid var(--line);
+          }
+          thead th{
+            background:#f1f5f9;
+            text-align:left;
+            padding:8px;
+            border-bottom:1px solid var(--line);
+          }
+          tbody td{
+            padding:8px;
+            border-bottom:1px solid var(--line);
+            vertical-align:top;
+          }
+          tbody tr:last-child td{border-bottom:0;}
+          @media print{
+            @page{size:A4;margin:12mm;}
+            body{background:#ffffff;}
+            .page{padding:0;max-width:100%;}
+            header{page-break-after:avoid;}
+            table{page-break-inside:auto;}
+            tr{break-inside:avoid;page-break-inside:avoid;}
+          }
+        </style>
+      </head>
+      <body>
+        <div class="page">
+          <header>
+            <div>
+              <h1>CGPA Report</h1>
+              <span>Generated from CGPA Calculator</span>
+            </div>
+            <span>${escapeHtml(timestamp)}</span>
+          </header>
+          ${summaryHtml}
+          ${semesterBlocks}
+        </div>
+      </body>
+      </html>
+    `;
+  }
+
+  function downloadPdf(){
+    const reportHtml = buildReportHtml();
+    const win = window.open("", "_blank");
+    if(!win){
+      toast("Popup disekat. Benarkan pop-up untuk muat turun PDF.");
+      return;
+    }
+    win.document.open();
+    win.document.write(reportHtml);
+    win.document.close();
+    win.focus();
+    setTimeout(()=>{
+      win.print();
+    }, 600);
+  }
+
   // ===== Actions =====
   function addSemester(copyFromActive=false){
     const id = uid();
@@ -595,11 +913,13 @@
           if(!s.id) s.id = uid();
           if(!Array.isArray(s.rows)) s.rows = defaultRows(5);
           if(!s.name) s.name = `Semester ${i+1}`;
-          s.rows = s.rows.map(r=>({
-            course: r?.course ?? "",
-            credit: (r?.credit ?? "") === "" ? "" : Number(r.credit),
-            grade: r?.grade ?? ""
-          }));
+          s.rows = s.rows.map(r=>(
+            {
+              course: r?.course ?? "",
+              credit: (r?.credit ?? "") === "" ? "" : Number(r.credit),
+              grade: r?.grade ?? ""
+            }
+          ));
         });
         state.semesters = parsed.semesters;
         state.activeSemId = parsed.activeSemId && state.semesters.some(s=>s.id===parsed.activeSemId)
@@ -640,6 +960,7 @@
   els.clearSemBtn.addEventListener("click", clearActiveSemester);
   els.resetAllBtn.addEventListener("click", resetAll);
   els.exportBtn.addEventListener("click", exportJSON);
+  els.downloadPdfBtn.addEventListener("click", downloadPdf);
 
   els.importFile.addEventListener("change", (e)=>{
     const f = e.target.files?.[0];
