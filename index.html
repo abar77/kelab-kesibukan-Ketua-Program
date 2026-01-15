@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CGPA Calculator</title>
+  <meta name="description" content="Kira GPA & CGPA (Malaysia grade points). Sesuai untuk GitHub Pages." />
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --text:#eef2ff;
+      --muted:#a9b3d1;
+      --line:#23305c;
+      --accent:#7c5cff;
+      --danger:#ff5c7a;
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans";
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(124,92,255,.25), transparent 60%),
+                  radial-gradient(900px 500px at 85% 10%, rgba(46,229,157,.18), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:28px 16px 60px;}
+    header{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px;}
+    h1{margin:0;font-size:clamp(22px,3vw,34px);letter-spacing:.3px}
+    .sub{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.4}
+    .pill{
+      font-size:12px;color:var(--muted);
+      border:1px solid rgba(255,255,255,.12);
+      padding:6px 10px;border-radius:999px;user-select:none;
+      background: rgba(17,26,51,.35);
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border: 1px solid rgba(255,255,255,.08);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+    .top{
+      padding:16px 16px 10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    button{
+      border:0;cursor:pointer;border-radius:12px;padding:10px 12px;font-weight:650;
+      letter-spacing:.2px;color:var(--text);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      display:inline-flex;align-items:center;gap:8px;
+    }
+    button:hover{background: rgba(255,255,255,.12);border-color: rgba(255,255,255,.18);}
+    button:active{transform: translateY(1px);}
+    .primary{background: linear-gradient(180deg, rgba(124,92,255,.95), rgba(124,92,255,.72));border-color: rgba(124,92,255,.55);}
+    .primary:hover{background: linear-gradient(180deg, rgba(124,92,255,1), rgba(124,92,255,.78));}
+    .danger{background: rgba(255,92,122,.12);border-color: rgba(255,92,122,.35);color:#ffd7de;}
+    .danger:hover{background: rgba(255,92,122,.18);border-color: rgba(255,92,122,.5);}
+    .tableWrap{padding:10px 16px 16px;}
+    table{
+      width:100%;
+      border-collapse:separate;border-spacing:0;
+      border-radius:14px;overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(18,26,51,.55);
+    }
+    thead th{
+      text-align:left;font-size:13px;color:var(--muted);font-weight:700;
+      padding:12px 12px;background: rgba(255,255,255,.03);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    tbody td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;}
+    tbody tr:last-child td{border-bottom:0;}
+    .cellStack{display:flex;flex-direction:column;gap:6px;}
+    input, select{
+      width:100%;
+      padding:10px 10px;border-radius:10px;outline:none;
+      color:var(--text);
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      font-size:14px;
+    }
+    input::placeholder{color: rgba(169,179,209,.65);}
+    input:focus, select:focus{border-color: rgba(124,92,255,.65);box-shadow: 0 0 0 3px rgba(124,92,255,.18);}
+    .err{display:none;color:#ffd0d9;font-size:12px;line-height:1.2;}
+    .hasErr .err{display:block;}
+    .hasErr input, .hasErr select{border-color: rgba(255,92,122,.65);box-shadow: 0 0 0 3px rgba(255,92,122,.16);}
+    .rowBtn{padding:9px 10px;border-radius:10px;font-size:13px;white-space:nowrap;}
+    .grid{margin-top:16px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+    .stat{
+      background: rgba(18,26,51,.55);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:14px 14px 12px;
+      box-shadow: var(--shadow);
+    }
+    .stat .k{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;}
+    .stat .v{margin-top:6px;font-size:22px;font-weight:800;letter-spacing:.2px;}
+    .hint{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.5;}
+    .footerNote{margin-top:10px;color: rgba(169,179,209,.75);font-size:12px;line-height:1.5;}
+    .footerNote code{color:#d9ddff}
+    .mobileLabel{display:none;}
+    @media (max-width:900px){
+      thead{display:none;}
+      table,tbody,tr,td{display:block;width:100%;}
+      tbody td{border-bottom:0;padding:10px 12px 6px;}
+      tbody tr{border-bottom:1px solid rgba(255,255,255,.08);}
+      tbody tr:last-child{border-bottom:0;}
+      .mobileLabel{display:block;color:var(--muted);font-size:12px;font-weight:700;margin-bottom:6px;}
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>CGPA Calculator</h1>
+        <p class="sub">Masukkan subjek, kredit dan gred. Tekan <b>Kira</b> untuk dapatkan keputusan. Data auto-simpan (localStorage).</p>
+      </div>
+      <div class="pill" id="autosavePill">Autosave: ON</div>
+    </header>
+
+    <section class="card">
+      <div class="top">
+        <div class="pill">
+          Skala: A=4.00 • A-=3.67 • B+=3.33 • B=3.00 • B-=2.67 • C+=2.33 • C=2.00 • C-=1.67 • D+=1.33 • D=1.00 • F=0.00
+        </div>
+        <div class="actions">
+          <button id="addBtn" type="button">➕ Tambah Subjek</button>
+          <button id="calcBtn" class="primary" type="button">🧮 Kira</button>
+          <button id="resetBtn" class="danger" type="button">♻️ Reset</button>
+        </div>
+      </div>
+
+      <div class="tableWrap">
+        <table aria-label="Jadual subjek">
+          <thead>
+            <tr>
+              <th style="width:44%">Nama Subjek (optional)</th>
+              <th style="width:18%">Kredit</th>
+              <th style="width:22%">Gred</th>
+              <th style="width:16%">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+
+        <div class="grid" aria-label="Keputusan">
+          <div class="stat">
+            <div class="k">Total Kredit</div>
+            <div class="v" id="outCredits">0.00</div>
+          </div>
+          <div class="stat">
+            <div class="k">Total Mata</div>
+            <div class="v" id="outPoints">0.00</div>
+          </div>
+          <div class="stat">
+            <div class="k">GPA</div>
+            <div class="v" id="outGPA">0.00</div>
+          </div>
+          <div class="stat">
+            <div class="k">CGPA</div>
+            <div class="v" id="outCGPA">0.00</div>
+          </div>
+        </div>
+
+        <div class="hint">
+          <b>Nota:</b> CGPA di sini dikira berdasarkan semua subjek yang dimasukkan (gabungan). Jika mahu versi “ikut semester”, saya boleh buat.
+        </div>
+
+        <div class="footerNote">
+          <b>GitHub Pages:</b> Pastikan fail bernama <code>index.html</code> (huruf kecil) dan letak di root repo. Settings → Pages → Branch: <code>main</code>, Folder: <code>/(root)</code>.
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // ===== Grade points (Malaysia standard) =====
+    const GRADE_POINTS = {
+      "A": 4.00,
+      "A-": 3.67,
+      "B+": 3.33,
+      "B": 3.00,
+      "B-": 2.67,
+      "C+": 2.33,
+      "C": 2.00,
+      "C-": 1.67,
+      "D+": 1.33,
+      "D": 1.00,
+      "F": 0.00
+    };
+
+    const STORAGE_KEY = "cgpa_calc_complete_v1";
+
+    const tbody = document.getElementById("tbody");
+    const addBtn = document.getElementById("addBtn");
+    const calcBtn = document.getElementById("calcBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const outCredits = document.getElementById("outCredits");
+    const outPoints  = document.getElementById("outPoints");
+    const outGPA     = document.getElementById("outGPA");
+    const outCGPA    = document.getElementById("outCGPA");
+
+    function fmt2(n){
+      if (!isFinite(n)) return "0.00";
+      return Number(n).toFixed(2);
+    }
+
+    function escapeHtml(str){
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function createGradeOptions(selected = ""){
+      const order = ["", "A","A-","B+","B","B-","C+","C","C-","D+","D","F"];
+      return order.map(g => {
+        if (g === "") return `<option value="" ${selected===""?"selected":""} disabled>Pilih gred</option>`;
+        return `<option value="${g}" ${selected===g?"selected":""}>${g} (${GRADE_POINTS[g].toFixed(2)})</option>`;
+      }).join("");
+    }
+
+    function rowTemplate(data = {}, idx = 0){
+      const course = data.course ?? "";
+      const credit = (data.credit ?? "") === "" ? "" : String(data.credit);
+      const grade  = data.grade ?? "";
+      return `
+        <tr data-idx="${idx}">
+          <td>
+            <div class="cellStack" data-field="course">
+              <span class="mobileLabel">Nama Subjek (optional)</span>
+              <input type="text" placeholder="Contoh: Biostatistik" value="${escapeHtml(course)}" />
+              <div class="err">—</div>
+            </div>
+          </td>
+          <td>
+            <div class="cellStack" data-field="credit">
+              <span class="mobileLabel">Kredit</span>
+              <input type="number" inputmode="decimal" min="0" step="0.5" placeholder="Contoh: 3" value="${escapeHtml(credit)}" />
+              <div class="err">Kredit mesti nombor &gt; 0.</div>
+            </div>
+          </td>
+          <td>
+            <div class="cellStack" data-field="grade">
+              <span class="mobileLabel">Gred</span>
+              <select>${createGradeOptions(grade)}</select>
+              <div class="err">Sila pilih gred.</div>
+            </div>
+          </td>
+          <td>
+            <span class="mobileLabel">Tindakan</span>
+            <button class="rowBtn danger" type="button" data-action="remove">🗑️ Padam</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    function getRowsData(){
+      const rows = [..]()
